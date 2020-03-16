@@ -67,7 +67,6 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
 
   if (norm == "l2") {
     #Minimizing variance of weights
-    if(is.null(target_n))
     P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
     # q = -sw/N #ensures objective function value is variance of weights
     # q = -(1/N)*(sw - mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w)
