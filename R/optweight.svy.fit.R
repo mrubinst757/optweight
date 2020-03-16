@@ -1,4 +1,4 @@
-optweight.svy.fit <- function(covs, tols = 0, targets, s.weights = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, ...) {
+optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weights = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, ...) {
   args <- list(...)
 
   #Process args
@@ -23,6 +23,7 @@ optweight.svy.fit <- function(covs, tols = 0, targets, s.weights = NULL, norm = 
 
   N <- nrow(covs)
   if (is_null(s.weights)) sw <- rep(1, N)
+  if (is_null(target_n)) target_n <- N
   else sw <- s.weights
 
   if (is_null(args[["maxs_pen"]])) mp <- rep(0, N)
@@ -65,13 +66,14 @@ optweight.svy.fit <- function(covs, tols = 0, targets, s.weights = NULL, norm = 
 
   if (norm == "l2") {
     #Minimizing variance of weights
-    P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/N)
+    if(is.null(target_n))
+    P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
     # q = -sw/N #ensures objective function value is variance of weights
     # q = -(1/N)*(sw - mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w)
-    q = -sw/N*(1 + mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w*sw)
+    q = -sw/target_n*(1 + mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w*sw)
 
     #Mean of weights  must equal 1
-    E1 = matrix(sw/N, nrow = 1)
+    E1 = matrix(sw/target_n, nrow = 1)
     F1l = 1
     F1u = F1l
 
