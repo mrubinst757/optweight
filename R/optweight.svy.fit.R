@@ -70,9 +70,9 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
     P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
     # q = -sw/N #ensures objective function value is variance of weights
     # q = -(1/N)*(sw - mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w)
-    q = -sw/target_n*(1 + mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w*sw)
+    q = -(sw/target_n)*(1 + mp - mean(mp)) #minimize variance of weights and maximize cov(mp, w*sw)
 
-    #Mean of weights  must equal 1
+    #Mean of weights must equal 1
     E1 = matrix(sw/target_n, nrow = 1)
     F1l = 1
     F1u = F1l
@@ -85,7 +85,7 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
 
     #Targeting constraints
     if (any(targeted)) {
-      G2 = t(covs[, targeted, drop = FALSE] * sw / N)
+      G2 = t(covs[, targeted, drop = FALSE] * sw / target_n)
       H2l = targets[targeted] - tols[targeted]
       H2u = targets[targeted] + tols[targeted]
     }
