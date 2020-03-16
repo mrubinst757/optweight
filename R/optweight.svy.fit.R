@@ -23,7 +23,8 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
 
   N <- nrow(covs)
   if (is_null(s.weights)) sw <- rep(1, N)
-    else sw <- s.weights
+  else sw <- s.weights
+  
   if (is_null(target_n)) target_n <- N
 
   if (is_null(args[["maxs_pen"]])) mp <- rep(0, N)
