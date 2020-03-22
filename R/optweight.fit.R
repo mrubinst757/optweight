@@ -1,10 +1,10 @@
-optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", targets = NULL, s.weights = NULL, b.weights = NULL, focal = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, force = FALSE, ...) {
+optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_target = NULL, targets = NULL, s.weights = NULL, b.weights = NULL, focal = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, force = FALSE, ...) {
   #For corr.type, make sure duals process correctly
   args <- list(...)
 
   #Process args
   # corr.type <- if (is_not_null(args[["corr.type"]])) match_arg(tolower(args[["corr.type"]]), c("pearson", "spearman", "both")) else "pearson"
-  corr.type<- "pearson"
+  corr.type <- "pearson"
 
   if (is_not_null(args[["eps"]])) {
     if (is_null(args[["eps_abs"]])) args[["eps_abs"]] <- args[["eps"]]
@@ -63,7 +63,9 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", targets
     if (norm != "l2") stop("Only the l2 norm is compatible with b.weights.", call. = FALSE)
     bw <- b.weights
   }
-
+  
+  if(is_null(n_target)) my_n <- N
+                      
   estimand <- toupper(estimand)
 
   if (length(min.w) != 1 || !is.numeric(min.w) || min.w < 0 || min.w >= 1) stop("min.w must be a single number in the interval [0, 1).", call. = FALSE)
@@ -182,9 +184,9 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", targets
 
   if (norm == "l2") {
     #Minimizing variance of weights
-    P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/N)
+    P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/my_n)
     # q = -sw/N #ensures objective function value is variance of weights
-    q = (-2*bw + mean(bw^2))*sw/N
+    q = (-2*bw + mean(bw^2))*sw/my_n
 
     #Minimizing the sum of the variances in each treatment group
     #Note: equiv. to setting targets closer to smaller group
@@ -193,7 +195,8 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", targets
 
     #Mean of weights in each treat must equal 1
     A_meanw = do.call("rbind", lapply(times, function(i) {
-      if (treat.types[i] == "cat") do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
+      if (treat.types[i] == "cat" & is_null(n_target)) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
+      if (treat.types[i] == "cat" & !is_null(n_target)) my_n                                                     
       else sw/n[[i]]
     }))
     L_meanw = do.call("c", lapply(times, function(i) rep(1, length(unique.treats[[i]]))))
