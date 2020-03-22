@@ -63,9 +63,7 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_targe
     if (norm != "l2") stop("Only the l2 norm is compatible with b.weights.", call. = FALSE)
     bw <- b.weights
   }
-  
-  if(is_null(n_target)) my_n <- N
-                      
+                        
   estimand <- toupper(estimand)
 
   if (length(min.w) != 1 || !is.numeric(min.w) || min.w < 0 || min.w >= 1) stop("min.w must be a single number in the interval [0, 1).", call. = FALSE)
@@ -184,14 +182,19 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_targe
 
   if (norm == "l2") {
     #Minimizing variance of weights
-    P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/my_n)
+    # P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/my_n)
     # q = -sw/N #ensures objective function value is variance of weights
-    q = (-2*bw + mean(bw^2))*sw/my_n
+    # q = (-2*bw + mean(bw^2))*sw/my_n
 
     #Minimizing the sum of the variances in each treatment group
     #Note: equiv. to setting targets closer to smaller group
-    # P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]))
-    # q = -sw/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]) #ensures objective function value is variance of weights
+    if(is_null(n_target)) {
+      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]))      
+      q = -sw/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]) #ensures objective function value is variance of weights
+    } else if(!is_null(n_target)) {
+      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, my_n[1], my_n[0]))
+      q = -sw/ifelse(treat.list[[1]]==1, my_n[1], my_n[0]) #ensures objective function value is variance of weights
+    }
 
     #Mean of weights in each treat must equal 1
     A_meanw = do.call("rbind", lapply(times, function(i) {
