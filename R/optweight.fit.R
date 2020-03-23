@@ -186,6 +186,8 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_targe
     # q = -sw/N #ensures objective function value is variance of weights
     # q = (-2*bw + mean(bw^2))*sw/my_n
     
+    my_n <- n_target
+    
     #Minimizing the sum of the variances in each treatment group
     #Note: equiv. to setting targets closer to smaller group
     if(is_null(n_target[[1]])) {
@@ -198,8 +200,9 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_targe
 
     #Mean of weights in each treat must equal 1
     A_meanw = do.call("rbind", lapply(times, function(i) {
-      if (treat.types[i] == "cat" & is_null(target_n[[i]])) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
-      if (treat.types[i] == "cat" & !is_null(target_n[[i]])) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / my_n[[i]][t]))
+      if (treat.types[i] == "cat" & is_null(n_target[[i]])) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
+      if (treat.types[i] == "cat" & !is_null(n_target[[i]])) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / 
+                                                                                     [[i]][t]))
       else sw/n[[i]]
     }))
     L_meanw = do.call("c", lapply(times, function(i) rep(1, length(unique.treats[[i]]))))
