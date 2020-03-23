@@ -185,21 +185,21 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_targe
     # P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/my_n)
     # q = -sw/N #ensures objective function value is variance of weights
     # q = (-2*bw + mean(bw^2))*sw/my_n
-
+    if(is_null(n_target)) my_n <- list(c("0" = NULL, "1" = NULL))
     #Minimizing the sum of the variances in each treatment group
     #Note: equiv. to setting targets closer to smaller group
     if(is_null(n_target)) {
       P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]))      
       q = -sw/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]) #ensures objective function value is variance of weights
-    } else if(!is_null(n_target)) {
-      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, my_n[1], my_n[0]))
-      q = -sw/ifelse(treat.list[[1]]==1, my_n[1], my_n[0]) #ensures objective function value is variance of weights
+    } else if(!is_null(n_target[[1]][1])) {
+      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, my_n[[1]]["1"], my_n[[1]]["0"]))      
+      q = -sw/ifelse(treat.list[[1]]==1, my_n[[1]]["1"], my_n[[1]]["0"]) #ensures objective function value is variance of weights
     }
 
     #Mean of weights in each treat must equal 1
     A_meanw = do.call("rbind", lapply(times, function(i) {
-      if (treat.types[i] == "cat" & is_null(n_target)) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
-      if (treat.types[i] == "cat" & !is_null(n_target)) my_n                                                     
+      if (treat.types[i] == "cat" & is_null(my_n[[1]][i])) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
+      if (treat.types[i] == "cat" & !is_null(my_n[[1]][i])) do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / my_n[[i]][t]))
       else sw/n[[i]]
     }))
     L_meanw = do.call("c", lapply(times, function(i) rep(1, length(unique.treats[[i]]))))
