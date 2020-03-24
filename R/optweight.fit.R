@@ -188,18 +188,26 @@ optweight.fit <- function(treat.list, covs.list, tols, estimand = "ATE", n_targe
     
     #Minimizing the sum of the variances in each treatment group
     #Note: equiv. to setting targets closer to smaller group
+    #if(is_null(n_target)) {
+    #  P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]))      
+    #  q = -sw/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]) #ensures objective function value is variance of weights
+    #} else if(!is_null(n_target)) {
+    #  P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n_target[[1]]["1"], n_target[[1]]["0"]))      
+    #  q = -sw/ifelse(treat.list[[1]]==1, n_target[[1]]["1"], n_target[[1]]["0"]) #ensures objective function value is variance of weights
+    #}
+
     if(is_null(n_target)) {
-      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]))      
-      q = -sw/ifelse(treat.list[[1]]==1, n[[1]]["1"], n[[1]]["0"]) #ensures objective function value is variance of weights
+      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/N)      
+      q = -sw/N #ensures objective function value is variance of weights
     } else if(!is_null(n_target)) {
-      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/ifelse(treat.list[[1]]==1, n_target[[1]]["1"], n_target[[1]]["0"]))      
-      q = -sw/ifelse(treat.list[[1]]==1, n_target[[1]]["1"], n_target[[1]]["0"]) #ensures objective function value is variance of weights
+      P = sparseMatrix(1:N, 1:N, x = (2*sw^2)/N)      
+      q = -sw/N #ensures objective function value is variance of weights
     }
 
     #Mean of weights in each treat must equal 1
     A_meanw = do.call("rbind", lapply(times, function(i) {
        if (treat.types[i] == "cat" & is.null(n_target)) 
-           do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw / n[[i]][t]))
+           do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw /n[[i]][t]))
         else if(treat.types[i] == 'cat' & !is.null(n_target)) 
            do.call("rbind", lapply(unique.treats[[i]], function(t) (treat.list[[i]] == t) * sw /n_target[[i]][t]))
         else if(treat.types[i] != 'cat') sw/n[[i]]
