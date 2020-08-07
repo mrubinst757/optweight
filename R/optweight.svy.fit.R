@@ -68,8 +68,8 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
   if (norm == "l2") {
     #Minimizing variance of weights
     if(experiment == TRUE) {
-      P = sqrt(p) %*% t(sqrt(p))
-      #diag(P) = 0
+      P = sqrt(1/p) %*% t(sqrt(1/p))
+      diag(P) = 0
     } 
     if(experiment == FALSE) {
      P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(2*re, .x, .x)))
