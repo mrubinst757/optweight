@@ -83,8 +83,8 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
      v = 1/sqrt(p)
      P1 = v %*% t(v)
      P2 = sparseMatrix(1:N, 1:N, x = 2*(sigma2.y + sdx2*beta^2*sigma2.x/p))
-     P = sigma2.x*(beta^2) %*% diff * P1 + P2
-     q = rep(0, N)
+     P  = 2*(sigma2.x*(beta^2) %*% diff)*P1 + P2/N
+     q  = rep(0, N)
     }
     # P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
     # q = -sw/N #ensures objective function value is variance of weights
