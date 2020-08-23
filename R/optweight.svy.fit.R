@@ -1,4 +1,4 @@
-optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weights = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, sigma2.y = 1, sigma2.x = 1, p = 1, re = 0, group_n, experiment = FALSE, exp2 = FALSE, beta, lambda1, lambda2, ...) {
+optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weights = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, sigma2.y = 1, sigma2.x = 1, p = 1, re = 0, group_n = NULL, exp1 = TRUE, exp2 = FALSE, exp3 = FALSE, beta, lambda1, ...) {
   args <- list(...)
 
   #Process args
@@ -66,25 +66,27 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
                  tols)
 
   if (norm == "l2") {
+    if(is.null(group_n)) group_n <- rep(1, N)
     #Minimizing variance of weights
-    if(experiment == TRUE) {
-     P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(2*re, .x, .x)))
-     P2 = sparseMatrix(1:N, 1:N, x = 2*(sigma2.y + sigma2.x/p))
-     P  = P1 + P2
-     q  = 1/sqrt(p)
-    } 
-    if(experiment == FALSE) {
+    if(exp1 == TRUE) {
      P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(2*re, .x, .x)))
      P2 = sparseMatrix(1:N, 1:N, x = 2*(sigma2.y + sigma2.x/p))
      P  = P1 + P2
      q  = rep(0, N)
     }  
     if(exp2 == TRUE) {
-     v = 1/sqrt(p)
-     P1 = v %*% t(v)
-     P2 = sparseMatrix(1:N, 1:N, x = sigma2.y)
-     P  = 2*(lambda1*P1 + lambda2*P2)
+     P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(re, .x, .x)))
+     P2 = sparseMatrix(1:N, 1:N, x = sigma2.y + sigma2.x/p)
+     P3 = 1/sqrt(p) %*% t(1/sqrt(p))
+     diag(P3) = 0
+     P  = 2*(P1 + P2 + lambda1*P3)
      q  = rep(0, N)
+    }
+    if(exp3 == TRUE) {
+     P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(re, .x, .x)))
+     P2 = sparseMatrix(1:N, 1:N, x = sigma2.y + sigma2.x/p)
+     P  = 2*(P1 + P2)
+     q  = rep(lambda1/sqrt(p), N)
     }
     # P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
     # q = -sw/N #ensures objective function value is variance of weights
