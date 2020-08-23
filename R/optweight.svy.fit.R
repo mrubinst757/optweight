@@ -77,7 +77,7 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
     if(exp2 == TRUE) {
      P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(re, .x, .x)))
      P2 = sparseMatrix(1:N, 1:N, x = sigma2.y + sigma2.x/p)
-     P3 = 1/sqrt(p) %*% t(1/sqrt(p))
+     P3 = (1/sqrt(p)) %*% t(1/sqrt(p))
      diag(P3) = 0
      P  = 2*(P1 + P2 + lambda1*P3)
      q  = rep(0, N)
