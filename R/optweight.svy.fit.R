@@ -1,4 +1,4 @@
-optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weights = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, sigma2.y = 1, p = 1, re = 0, group_n = NULL, exp1 = TRUE, exp2 = FALSE, ...) {
+optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weights = NULL, norm = "l2", std.binary = FALSE, std.cont = TRUE, min.w = 1E-8, verbose = FALSE, sigma2.y = 1, pw = 1, re = 0, group_n = NULL, exp1 = TRUE, ...) {
   args <- list(...)
 
   #Process args
@@ -70,13 +70,13 @@ optweight.svy.fit <- function(covs, tols = 0, targets, target_n = NULL, s.weight
     #Minimizing variance of weights
     if(exp1 == TRUE) {
      P1 = lift_dl(Matrix::bdiag)(purrr::map(group_n, ~matrix(2*re, .x, .x)))
-     P2 = sparseMatrix(1:N, 1:N, x = 2*sigma2.y)
+     P2 = sparseMatrix(1:N, 1:N, x = 2*sigma2.y*pw)
      P  = P1 + P2
      q  = rep(0, N)
     }  
-    if(exp2 == TRUE) {
-     P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
-     q = -sw/target_n
+    #if(exp2 == TRUE) {
+    # P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
+    # q = -sw/target_n
     }
     # P = sparseMatrix(1:N, 1:N, x = 2*(sw^2)/target_n)
     # q = -sw/N #ensures objective function value is variance of weights
